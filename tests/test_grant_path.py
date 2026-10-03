@@ -26,7 +26,8 @@ def mocks(vm, states=("PASS", "PASS", "MISSING")):
 
 def enable_consensus(contract, monkeypatch, validator=None):
     module = sys.modules[contract.__class__.__module__]
-    monkeypatch.setattr(module.gl.eq_principle, "prompt_non_comparative", validator or (lambda fn, **_kwargs: fn()))
+    monkeypatch.setattr(module.gl.eq_principle, "strict_eq", lambda fn: fn())
+    monkeypatch.setattr(module.gl.eq_principle, "prompt_comparative", validator or (lambda fn, *_args, **_kwargs: fn()))
 
 
 def test_contract_loads(direct_deploy):
@@ -66,7 +67,7 @@ def test_forged_quote_and_source_index_fail_closed(direct_vm, direct_deploy, mon
 
 def test_validator_rejects_semantic_forgery_even_with_same_overall(direct_vm, direct_deploy, monkeypatch):
     contract = direct_deploy(CONTRACT)
-    def validator(fn, **_kwargs):
+    def validator(fn, *_args, **_kwargs):
         candidate = json.loads(fn())
         if candidate["criteria"][1]["state"] != "PASS":
             raise sys.modules[contract.__class__.__module__].gl.vm.UserError("[LLM_ERROR] Validator rejected false energy finding")
@@ -76,17 +77,14 @@ def test_validator_rejects_semantic_forgery_even_with_same_overall(direct_vm, di
         contract.assess(case_id)
 
 
-def test_consensus_aliases_are_canonicalized_without_trusting_overall(direct_vm, direct_deploy, monkeypatch):
+def test_comparator_cannot_replace_the_contract_schema(direct_vm, direct_deploy, monkeypatch):
     contract = direct_deploy(CONTRACT)
-    def aliased(fn, **_kwargs):
-        candidate = json.loads(fn())
-        return json.dumps({"deadline_status": "OPEN", "overall_eligibility": "READY", "criteria": [
-            {"index": row["index"], "state": row["state"], "source_index": row["source_index"], "requirement": row["requirement_quote"], "profile_match": row["profile_quote"]}
-            for row in candidate["criteria"]
-        ], "source_receipts": candidate["source_receipts"]})
+    def aliased(fn, *_args, **_kwargs):
+        fn()
+        return json.dumps({"deadline_status": "OPEN", "eligibility": []})
     enable_consensus(contract, monkeypatch, aliased); case_id = create(contract); mocks(direct_vm)
-    assessment = contract.assess(case_id)
-    assert assessment["overall"] == "NEEDS_WORK" and "requirement_quote" in assessment["criteria"][0]
+    with direct_vm.expect_revert("Two to eight criteria"):
+        contract.assess(case_id)
 
 
 def test_revision_authorization_reassessment_and_terminal_finalization(direct_vm, direct_deploy, direct_alice, direct_bob, monkeypatch):
