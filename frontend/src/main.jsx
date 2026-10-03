@@ -13,7 +13,7 @@ const RPC = import.meta.env.VITE_GENLAYER_RPC_URL || "https://studio-next.genlay
 const CHAIN_ID = Number(import.meta.env.VITE_GENLAYER_CHAIN_ID || "61997");
 const CHAIN = { ...studioDevnet, id: CHAIN_ID, name: "GenLayer Studio Next", rpcUrls: { default: { http: [RPC] } } };
 const EXPLORER = "https://explorer-studio-dev.genlayer.com";
-const DEMO_SOURCE = "https://raw.githubusercontent.com/nearar22/grant-path/main/docs/demo-grant.txt";
+const DEMO_SOURCE = "https://raw.githubusercontent.com/nearar22/grant-path/8815d365a98e81aff1851d9bbda7787a642670ba/docs/demo-grant.txt";
 
 const clean = value => value instanceof Map ? Object.fromEntries([...value].map(([k,v])=>[k,clean(v)])) : Array.isArray(value) ? value.map(clean) : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).map(([k,v])=>[k,clean(v)])) : typeof value === "bigint" ? Number(value) : value;
 const short = value => value ? `${value.slice(0,6)}…${value.slice(-4)}` : "";

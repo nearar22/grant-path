@@ -8,7 +8,7 @@ const chain={...studioDevnet,id:61997,name:"GenLayer Studio Next",rpcUrls:{defau
 const client=createClient({chain,account:createAccount(key)});
 const caseId=`grant-demo-${Date.now().toString(36)}`;
 const initial="Applicant is a registered organization operating in Morocco. Project reduces electricity consumption through automated scheduling for small workshops. The pilot has internal test results but does not yet have a public demonstration URL.";
-const revised=initial+" Public demonstration URL is available at https://example.org/demo.";
+const revised="Applicant is a registered organization operating in Morocco. Project reduces electricity consumption through automated scheduling for small workshops. Public demonstration URL is available at https://example.org/demo.";
 
 async function write(label,functionName,args,intelligent=false){
   const fees=await client.estimateTransactionFees({leaderTimeunitsAllocation:intelligent?500n:180n,validatorTimeunitsAllocation:intelligent?600n:360n});

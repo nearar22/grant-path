@@ -76,6 +76,19 @@ def test_validator_rejects_semantic_forgery_even_with_same_overall(direct_vm, di
         contract.assess(case_id)
 
 
+def test_consensus_aliases_are_canonicalized_without_trusting_overall(direct_vm, direct_deploy, monkeypatch):
+    contract = direct_deploy(CONTRACT)
+    def aliased(fn, **_kwargs):
+        candidate = json.loads(fn())
+        return json.dumps({"deadline_status": "OPEN", "overall_eligibility": "READY", "criteria": [
+            {"index": row["index"], "state": row["state"], "source_index": row["source_index"], "requirement": row["requirement_quote"], "profile_match": row["profile_quote"]}
+            for row in candidate["criteria"]
+        ], "source_receipts": candidate["source_receipts"]})
+    enable_consensus(contract, monkeypatch, aliased); case_id = create(contract); mocks(direct_vm)
+    assessment = contract.assess(case_id)
+    assert assessment["overall"] == "NEEDS_WORK" and "requirement_quote" in assessment["criteria"][0]
+
+
 def test_revision_authorization_reassessment_and_terminal_finalization(direct_vm, direct_deploy, direct_alice, direct_bob, monkeypatch):
     contract = direct_deploy(CONTRACT); enable_consensus(contract, monkeypatch); direct_vm.sender = direct_alice; case_id = create(contract); mocks(direct_vm); contract.assess(case_id); direct_vm.clear_mocks()
     direct_vm.sender = direct_bob
