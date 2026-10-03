@@ -1,0 +1,29 @@
+.tx-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(23, 33, 28, .72);
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+.tx-box {
+  width: min(560px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: #fffdf6;
+  border: 1px solid #17211c;
+  box-shadow: 14px 14px 0 #101713;
+  padding: 20px;
+}
+.tx-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #c9c4b7;
+  padding-bottom: 13px;
+  margin-bottom: 15px;
+  font: 10px "DM Mono", monospace;
+  letter-spacing: .1em;
+}
+.tx-head button { border: 0; background: transparent; }
