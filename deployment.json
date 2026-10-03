@@ -1,0 +1,23 @@
+{
+  "network": "GenLayer Studio Next",
+  "chainId": 61997,
+  "rpc": "https://studio-next.genlayer.com/api",
+  "explorer": "https://explorer-studio-dev.genlayer.com",
+  "contractAddress": "0x75077385a76E680573c148F6DA0F614D301c2c59",
+  "deploymentTransaction": "0xb62a1dc03160e8bc04d74853deb5d89816b39dcb01c2896b5d4e162459aad1f9",
+  "sourceCommit": "21fda88bc403e06ebae01befb8d8718ea3efc143",
+  "sourceSha256": "14406442b9d8770d64e31fbd4f6e511bd3f757d756531c8f90a34b70fde9faf8",
+  "demoCase": "grant-demo-musiojw3",
+  "demoTransactions": {
+    "create": "0xbf819b4fe6b065bbd645c1dae527791aa8b4797ce23aaad2519eaadb9a8df8a7",
+    "initialAssessment": "0x5a308ba99762b31977af723a0bed31512c915f828e2865c8b136a50e568259b9",
+    "revision": "0xc25834e1b030591ac7c3ad8d19daace937837d398948b9e24e9ca0885a2441c5",
+    "reassessment": "0x7e271c9e431cdc853b8e21185346c494c8a9372245f753a702b92c6a2ddd992c",
+    "finalization": "0x386a7f3e8c76f8370123fb6c87101c7bd5e2b3746441bed76c6a059c288d3cd3"
+  },
+  "verified": {
+    "sourceMatch": true,
+    "finalStatus": "FINAL",
+    "finalOverall": "READY"
+  }
+}

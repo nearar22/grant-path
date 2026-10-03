@@ -41,4 +41,12 @@ The app uses GenLayer Studio Next, chain `61997`, and waits for successful `FINA
 - `scripts/`: deployment, source-match verification, and live lifecycle smoke test
 - `docs/identity-matrix.md`: mechanism and interface originality record
 
-Live deployment and public application evidence will be recorded after the exact reviewed source is deployed.
+## Live deployment
+
+- Network: GenLayer Studio Next, chain `61997`
+- Contract: [`0x75077385a76E680573c148F6DA0F614D301c2c59`](https://explorer-studio-dev.genlayer.com/address/0x75077385a76E680573c148F6DA0F614D301c2c59)
+- Deployment transaction: [`0xb62a1dc0...9aad1f9`](https://explorer-studio-dev.genlayer.com/tx/0xb62a1dc03160e8bc04d74853deb5d89816b39dcb01c2896b5d4e162459aad1f9)
+- Public demo case: `grant-demo-musiojw3`
+- Exact source match: verified by SHA-256 in [`deployment.json`](deployment.json)
+
+The public demo records a complete lifecycle. Its first assessment is `NOT_ELIGIBLE` because a mandatory public demonstration is absent. After an owner-authorized profile revision, validators reassess the same frozen source, all criteria pass, and the case is sealed as `FINAL` with overall state `READY`.
