@@ -5,8 +5,10 @@ import { studioDevnet } from "genlayer-js/chains";
 import { createTransactionKit } from "@genlayer/transaction-kit";
 import { GenLayerTransactionPanel } from "@genlayer/transaction-kit-react";
 import { ArrowRight, BookOpen, Check, CircleAlert, ExternalLink, FileSearch, Flag, LoaderCircle, LockKeyhole, Plus, RotateCcw, Sparkles, Wallet, X } from "lucide-react";
+import { buildCaseTransaction, hydrateLoadedCase } from "./workflow.js";
 import "./styles.css";
 import "./tx.css";
+import "./revision.css";
 
 const ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "";
 const RPC = import.meta.env.VITE_GENLAYER_RPC_URL || "https://studio-next.genlayer.com/api";
@@ -36,7 +38,10 @@ function App(){
   const read=useCallback(async()=>{
     if(!ADDRESS||!caseId.trim())return;
     setLoading(true);
-    try{setRecord(clean(await client.readContract({address:ADDRESS,functionName:"get_case",args:[caseId.trim()],jsonSafeReturn:true})));setNotice("");}
+    try{
+      const loaded=hydrateLoadedCase(clean(await client.readContract({address:ADDRESS,functionName:"get_case",args:[caseId.trim()],jsonSafeReturn:true})));
+      setRecord(loaded.record);setProfile(loaded.profile);setNotice("");
+    }
     catch{setRecord(null);setNotice("No on-chain application was found for this ID. Start a fresh path or load the public demo.");}
     finally{setLoading(false);}
   },[caseId,client]);
@@ -54,14 +59,17 @@ function App(){
   }
 
   const tx=useMemo(()=>{
-    if(!ADDRESS||!action)return null;
-    const base={kind:"write",address:ADDRESS};
-    if(action==="create")return {...base,method:"create_case",args:[caseId.trim(),title.trim(),goal.trim(),profile.trim(),JSON.stringify(sources.map(x=>x.trim()).filter(Boolean))]};
-    if(action==="assess")return {...base,method:"assess",args:[caseId.trim()]};
-    if(action==="revise")return {...base,method:"revise_profile",args:[caseId.trim(),profile.trim()]};
-    return {...base,method:"finalize",args:[caseId.trim()]};
-  },[action,caseId,title,goal,profile,sources]);
-  function submit(next){if(!kit){setNotice("Connect your Studio Next wallet first.");return;}setNotice("");setAction(next);}
+    try{return buildCaseTransaction({address:ADDRESS,action,caseId,title,goal,profile,sources,record});}
+    catch(error){return {error:error.message};}
+  },[action,caseId,title,goal,profile,sources,record]);
+  function submit(next){
+    if(!kit){setNotice("Connect your Studio Next wallet first.");return;}
+    if(next==="revise"){
+      try{buildCaseTransaction({address:ADDRESS,action:next,caseId,title,goal,profile,sources,record});}
+      catch(error){setNotice(error.message);return;}
+    }
+    setNotice("");setAction(next);
+  }
   function done(status){if(status.phase==="finalized"){setAction(null);if(status.successful){void read();}else setNotice(`Transaction failed: ${status.executionResultName||status.statusName||"contract rejected the input"}.`);}}
   const assessment=record?.assessment||null;
   const currentStep=!record?1:record.status==="READY"?2:3;
@@ -96,7 +104,10 @@ function App(){
               <div className="verdict"><div className={`verdict-mark ${assessment.overall.toLowerCase()}`}>{assessment.overall==="READY"?<Check/>:<Flag/>}</div><div><small>APPLICATION MAP</small><h3>{assessment.overall.replaceAll("_"," ")}</h3><p>Deadline: <b>{assessment.deadline_status}</b> · Revision {record.revision}</p></div></div>
               <div className="criterion-list">{assessment.criteria.map(item=><article key={item.index} className={statusTone[item.state]}><span className="criterion-index">{String(item.index+1).padStart(2,"0")}</span><div><div className="criterion-state">{item.state}</div><blockquote>“{item.requirement_quote}”</blockquote>{item.profile_quote?<p><b>Your proof:</b> “{item.profile_quote}”</p>:<p className="gap">No matching applicant evidence was found.</p>}<small>SOURCE {item.source_index+1}</small></div></article>)}</div>
               <div className="receipts"><b>Source receipts</b>{assessment.source_receipts.map(receipt=><a key={receipt.index} href={receipt.url} target="_blank"><span>{receipt.host}</span><code>{receipt.sha256.slice(0,12)}…{receipt.sha256.slice(-8)}</code><ExternalLink size={13}/></a>)}</div>
-              {record.status==="ASSESSED"&&<div className="decision-bar"><div><b>Keep working or seal this map?</b><small>Only the case owner can revise or finalize.</small></div><button className="secondary" onClick={()=>submit("revise")}><RotateCcw size={16}/> Save revised profile</button><button className="primary compact" onClick={()=>submit("finalize")}>Finalize <Check size={16}/></button></div>}
+              {record.status==="ASSESSED"&&<div className="revision-panel">
+                <label className="field"><span>Revise the loaded applicant profile</span><textarea aria-label="Revised applicant profile" value={profile} onChange={e=>setProfile(e.target.value)} rows={7} maxLength={5000}/><small>Edit the on-chain profile above, then save it before reassessing. {profile.length}/5000</small></label>
+                <div className="decision-bar"><div><b>Keep working or seal this map?</b><small>Only the case owner can revise or finalize.</small></div><button className="secondary" onClick={()=>submit("revise")}><RotateCcw size={16}/> Save revised profile</button><button className="primary compact" onClick={()=>submit("finalize")}>Finalize <Check size={16}/></button></div>
+              </div>}
             </>}
           </section>}
           {!ADDRESS&&<div className="config-warning">Contract deployment is not configured in this build.</div>}
@@ -104,7 +115,7 @@ function App(){
       </section>
     </main>
     <footer><span>GrantPath is an advisory readiness tool, not a grantmaker decision.</span><a href="https://github.com/nearar22/grant-path" target="_blank">Source code <ExternalLink size={13}/></a></footer>
-    {action&&kit&&tx&&<div className="tx-overlay"><section className="tx-box"><div className="tx-head"><span>GENLAYER CHECKPOINT</span><button onClick={()=>setAction(null)}><X size={17}/></button></div><GenLayerTransactionPanel kit={kit} tx={tx} network="GenLayer Studio Next" theme="light" trackUntil="finalized" onDone={done}/></section></div>}
+    {action&&kit&&tx&&!tx.error&&<div className="tx-overlay"><section className="tx-box"><div className="tx-head"><span>GENLAYER CHECKPOINT</span><button onClick={()=>setAction(null)}><X size={17}/></button></div><GenLayerTransactionPanel kit={kit} tx={tx} network="GenLayer Studio Next" theme="light" trackUntil="finalized" onDone={done}/></section></div>}
   </div>;
 }
 

@@ -8,7 +8,7 @@ Most grant applications fail long before evaluation: a requirement was missed, a
 2. GenLayer validators fetch every source and examine the complete pages.
 3. Consensus records the deadline as `OPEN`, `CLOSED`, or `UNKNOWN`, and maps every material gate to `PASS`, `FAIL`, or `MISSING`.
 4. Every requirement stores an exact source quote. Every `PASS` also stores an exact applicant-profile quote.
-5. The applicant may revise the profile twice and rerun the assessment before sealing a final advisory map.
+5. The assessed-case screen reloads the exact stored profile into an editor. The applicant may revise it twice and rerun the assessment before sealing a final advisory map.
 
 The overall state is derived deterministically. A closed deadline or any failed mandatory gate produces `NOT_ELIGIBLE`. Missing evidence or an unknown deadline produces `NEEDS_WORK`. Only a fully open, fully supported map becomes `READY`.
 

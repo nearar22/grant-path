@@ -1,0 +1,13 @@
+.revision-panel {
+  border-top: 1px solid var(--line);
+  margin-top: 12px;
+  padding-top: 8px;
+}
+
+.revision-panel .field {
+  margin-bottom: 16px;
+}
+
+.revision-panel .decision-bar {
+  margin-top: 0;
+}
