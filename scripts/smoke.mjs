@@ -39,10 +39,12 @@ await write("ASSESS_INITIAL","assess",[caseId],true);
 const first=await client.readContract({address:contract,functionName:"get_case",args:[caseId],jsonSafeReturn:true});
 console.log(`INITIAL_STATE=${JSON.stringify(first)}`);
 if(first.status!=="ASSESSED"||!first.assessment?.source_receipts?.length)throw new Error("Initial assessment did not persist receipts");
-await write("REVISE","revise_profile",[caseId,revised]);
-await write("ASSESS_REVISED","assess",[caseId],true);
-await write("FINALIZE","finalize",[caseId]);
-const finalState=await client.readContract({address:contract,functionName:"get_case",args:[caseId],jsonSafeReturn:true});
-console.log(`FINAL_STATE=${JSON.stringify(finalState)}`);
-if(finalState.status!=="FINAL"||finalState.revision!==1||!finalState.assessment?.source_receipts?.length)throw new Error("Final live state is incorrect");
+if(process.env.STOP_AFTER_INITIAL!=="1"){
+  await write("REVISE","revise_profile",[caseId,revised]);
+  await write("ASSESS_REVISED","assess",[caseId],true);
+  await write("FINALIZE","finalize",[caseId]);
+  const finalState=await client.readContract({address:contract,functionName:"get_case",args:[caseId],jsonSafeReturn:true});
+  console.log(`FINAL_STATE=${JSON.stringify(finalState)}`);
+  if(finalState.status!=="FINAL"||finalState.revision!==1||!finalState.assessment?.source_receipts?.length)throw new Error("Final live state is incorrect");
+}
 clearInterval(keeper);
